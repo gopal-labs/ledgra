@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import useAuthStore from '../store/authStore'
 
 // Icons (inline SVG for zero dependencies)
 const Icon = ({ name, size = 16 }) => {
@@ -62,7 +63,14 @@ const LedgraLogo = () => (
 
 const Sidebar = () => {
   const location = useLocation()
+  const { user } = useAuthStore()
   const [openGroups, setOpenGroups] = useState({ Operations: true, Settings: false })
+
+  const isStaff = user?.role === 'Warehouse Staff'
+  const visibleNavItems = NAV_ITEMS.filter(item => {
+    if (isStaff && item.label === 'Settings') return false
+    return true
+  })
 
   const toggleGroup = (label) =>
     setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }))
@@ -84,7 +92,7 @@ const Sidebar = () => {
       <nav style={{ flex: 1, overflowY: 'auto', paddingTop: 8, paddingBottom: 16 }}>
         <div className="nav-section-label">Main</div>
 
-        {NAV_ITEMS.map((item) => {
+        {visibleNavItems.map((item) => {
           if (!item.children) {
             return (
               <NavLink
@@ -130,6 +138,9 @@ const Sidebar = () => {
                         `nav-item nav-item-sub ${isActive ? 'active' : ''}`
                       }
                     >
+                      <span className="nav-icon" style={{ color: 'inherit', display: 'inline-flex', alignItems: 'center' }}>
+                        <Icon name={child.icon} size={14} />
+                      </span>
                       {child.label}
                     </NavLink>
                   ))}

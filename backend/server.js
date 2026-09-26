@@ -17,6 +17,7 @@ const deliveryRoutes = require('./routes/delivery.routes');
 const transferRoutes = require('./routes/transfer.routes');
 const adjustmentRoutes = require('./routes/adjustment.routes');
 const moveRoutes = require('./routes/move.routes');
+const stockRoutes = require('./routes/stock.routes');
 
 const app = express();
 
@@ -44,6 +45,8 @@ app.use('/api/deliveries', deliveryRoutes);
 app.use('/api/transfers', transferRoutes);
 app.use('/api/adjustments', adjustmentRoutes);
 app.use('/api/moves', moveRoutes);
+app.use('/api/move-history', moveRoutes);
+app.use('/api/stock', stockRoutes);
 
 // 404 handler
 app.use((req, res) => {

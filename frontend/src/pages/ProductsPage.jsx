@@ -4,7 +4,8 @@ import Button from '../components/Button'
 import Badge from '../components/Badge'
 import Modal from '../components/Modal'
 import Input from '../components/Input'
-import { productApi, categoryApi, warehouseApi, locationApi } from '../api'
+import { useNavigate } from 'react-router-dom'
+import { productApi, categoryApi, warehouseApi, locationApi, stockApi } from '../api'
 
 /* ─── Inline Icons ─────────────────────────────── */
 const Ico = ({ d, size = 16, ...rest }) => (
@@ -325,12 +326,14 @@ const ProductsPage = () => {
 
   const searchRef = useRef(null)
 
+  const navigate = useNavigate()
+
   const fetchProducts = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await productApi.getAll({ search: search || undefined })
+      const res = await stockApi.getConsolidated({ search: search || undefined })
       setProducts(res.data.data)
-      setTotal(res.data.total)
+      setTotal(res.data.data.length)
     } catch { setProducts([]) }
     finally { setLoading(false) }
   }, [search])
@@ -436,8 +439,8 @@ const ProductsPage = () => {
               </td></tr>
             ) : (
               products.map(p => {
-                const isLow = p.totalOnHand <= p.reorderPoint && p.totalOnHand > 0
-                const isOut = p.totalOnHand === 0
+                const isLow = p.onHand <= p.reorderPoint && p.onHand > 0
+                const isOut = p.onHand === 0
                 return (
                   <tr key={p._id}>
                     <td>
@@ -450,15 +453,22 @@ const ProductsPage = () => {
                     <td style={{ textAlign: 'right' }}>
                       <span style={{ fontWeight: 700, color: isOut ? 'var(--danger)' : isLow ? 'var(--warning)' : 'var(--text-primary)', cursor: 'pointer' }}
                         onClick={() => openStock(p)}>
-                        {p.totalOnHand ?? 0}
+                        {p.onHand ?? 0}
                       </span>
                     </td>
-                    <td style={{ textAlign: 'right', fontWeight: 600, color: p.totalFree > 0 ? 'var(--success)' : 'var(--text-muted)' }}>
-                      {p.totalFree ?? 0}
+                    <td style={{ textAlign: 'right', fontWeight: 600, color: p.freeToUse > 0 ? 'var(--success)' : 'var(--text-muted)' }}>
+                      {p.freeToUse ?? 0}
                     </td>
                     <td style={{ textAlign: 'right', color: 'var(--text-muted)', fontSize: 13 }}>{p.reorderPoint}</td>
                     <td>
-                      <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                      <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', alignItems: 'center' }}>
+                        <button
+                          className="ledgra-btn ledgra-btn-secondary"
+                          style={{ padding: '3px 8px', fontSize: 11 }}
+                          onClick={() => navigate('/operations/adjustments')}
+                          title="Quick Adjust Stock">
+                          Adjust
+                        </button>
                         <button className="ledgra-btn ledgra-btn-ghost" style={{ padding: '5px 8px' }} onClick={() => openEdit(p)} title="Edit"><EditIco /></button>
                         <button className="ledgra-btn ledgra-btn-danger" style={{ padding: '5px 8px' }} onClick={() => handleDelete(p._id, p.name)} title="Delete"><TrashIco /></button>
                       </div>

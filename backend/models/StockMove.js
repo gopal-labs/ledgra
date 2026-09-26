@@ -9,8 +9,12 @@ const stockMoveSchema = new mongoose.Schema(
     },
     moveType: {
       type: String,
-      enum: ['Receipt', 'Delivery', 'Transfer', 'Adjustment'],
+      enum: ['Receipt', 'Delivery', 'Transfer', 'Adjustment', 'in', 'out', 'internal', 'adjustment'],
       required: true,
+    },
+    contact: {
+      type: String,
+      default: '-',
     },
     product: {
       type: mongoose.Schema.Types.ObjectId,
@@ -27,6 +31,11 @@ const stockMoveSchema = new mongoose.Schema(
       ref: 'Location',
       default: null,
     },
+    warehouse: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Warehouse',
+      default: null,
+    },
     quantity: {
       type: Number,
       required: true,
@@ -34,6 +43,10 @@ const stockMoveSchema = new mongoose.Schema(
     responsible: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+    },
+    status: {
+      type: String,
+      default: 'Done',
     },
     date: {
       type: Date,

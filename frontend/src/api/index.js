@@ -86,8 +86,14 @@ export const adjustmentApi = {
 }
 
 export const moveApi = {
-  getAll: (params) => api.get('/moves', { params }),
+  getAll: (params) => api.get('/move-history', { params }),
 }
+
+export const stockApi = {
+  getConsolidated: (params) => api.get('/stock', { params }),
+  getLowStock: () => api.get('/stock/low-stock'),
+}
+
 
 
 

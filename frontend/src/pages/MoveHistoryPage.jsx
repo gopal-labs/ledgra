@@ -13,16 +13,25 @@ const SearchIco = () => <Ico d={<><circle cx="11" cy="11" r="8"/><line x1="21" y
 const DownloadIco = () => <Ico d={<><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>} />
 const HistoryIco = ({ size = 36 }) => <Ico size={size} d={<><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></>} />
 
-const MOVE_TYPES = ['Receipt', 'Delivery', 'Transfer', 'Adjustment']
-
-const TYPE_BADGES = {
-  Receipt: { variant: 'success', label: 'Receipt' },
-  Delivery: { variant: 'info', label: 'Delivery' },
-  Transfer: { variant: 'warning', label: 'Transfer' },
-  Adjustment: { variant: 'neutral', label: 'Adjustment' },
-}
+const MOVE_TYPES = [
+  { key: 'in', label: 'Incoming' },
+  { key: 'out', label: 'Outgoing' },
+  { key: 'internal', label: 'Internal' },
+  { key: 'adjustment', label: 'Adjustment' },
+]
 
 const formatDate = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
+
+const getRowStyle = (moveType, quantity) => {
+  const isIncoming = ['Receipt', 'in'].includes(moveType) || (moveType === 'Adjustment' && quantity > 0)
+  const isOutgoing = ['Delivery', 'out'].includes(moveType) || (moveType === 'Adjustment' && quantity < 0)
+  const isInternal = ['Transfer', 'internal'].includes(moveType)
+
+  if (isIncoming) return { color: '#4ade80', badgeVariant: 'success', label: 'IN' }
+  if (isOutgoing) return { color: '#f87171', badgeVariant: 'danger', label: 'OUT' }
+  if (isInternal) return { color: '#60a5fa', badgeVariant: 'warning', label: 'INT' }
+  return { color: 'var(--text-muted)', badgeVariant: 'neutral', label: moveType }
+}
 
 const MoveHistoryPage = () => {
   const [moves, setMoves] = useState([])
@@ -53,12 +62,13 @@ const MoveHistoryPage = () => {
   // Export Stock Ledger to CSV
   const exportToCSV = () => {
     if (moves.length === 0) return
-    const headers = ['Reference,Move Type,Product,SKU,From Location,To Location,Quantity,Responsible,Date\n']
+    const headers = ['Reference,Move Type,Product,SKU,Contact,From Location,To Location,Quantity,Responsible,Date\n']
     const rows = moves.map(m => [
       `"${m.reference}"`,
       `"${m.moveType}"`,
       `"${m.product?.name || ''}"`,
       `"${m.product?.sku || ''}"`,
+      `"${m.contact || '-'}"`,
       `"${m.fromLocation?.name || '—'}"`,
       `"${m.toLocation?.name || '—'}"`,
       `"${m.quantity}"`,
@@ -86,11 +96,11 @@ const MoveHistoryPage = () => {
           {showSearch ? (
             <input
               type="text"
-              placeholder="Search reference..."
+              placeholder="Search reference or contact..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="ledgra-input"
-              style={{ width: 200, padding: '6px 12px', fontSize: 13 }}
+              style={{ width: 220, padding: '6px 12px', fontSize: 13 }}
               autoFocus
               onBlur={() => !search && setShowSearch(false)}
             />
@@ -112,18 +122,18 @@ const MoveHistoryPage = () => {
                 background: typeFilter === '' ? 'var(--accent)' : 'transparent',
                 color: typeFilter === '' ? '#fff' : 'var(--text-muted)',
               }}>
-              All Moves ({moves.length})
+              All ({moves.length})
             </button>
             {MOVE_TYPES.map(t => (
               <button
-                key={t}
-                onClick={() => setTypeFilter(typeFilter === t ? '' : t)}
+                key={t.key}
+                onClick={() => setTypeFilter(typeFilter === t.key ? '' : t.key)}
                 style={{
                   border: 'none', borderRadius: 7, padding: '4px 10px', fontSize: 12, cursor: 'pointer',
-                  background: typeFilter === t ? 'var(--accent)' : 'transparent',
-                  color: typeFilter === t ? '#fff' : 'var(--text-muted)',
+                  background: typeFilter === t.key ? 'var(--accent)' : 'transparent',
+                  color: typeFilter === t.key ? '#fff' : 'var(--text-muted)',
                 }}>
-                {t}
+                {t.label}
               </button>
             ))}
           </div>
@@ -147,18 +157,19 @@ const MoveHistoryPage = () => {
             <thead>
               <tr>
                 <th>Reference</th>
-                <th>Type</th>
+                <th>Move Type</th>
                 <th>Product</th>
+                <th>Contact</th>
                 <th>From Location</th>
                 <th>To Location</th>
                 <th>Quantity</th>
-                <th>Responsible</th>
+                <th>Status</th>
                 <th>Date & Time</th>
               </tr>
             </thead>
             <tbody>
               {moves.map(m => {
-                const badgeInfo = TYPE_BADGES[m.moveType] || { variant: 'neutral', label: m.moveType }
+                const style = getRowStyle(m.moveType, m.quantity)
                 return (
                   <tr key={m._id}>
                     <td>
@@ -167,18 +178,25 @@ const MoveHistoryPage = () => {
                       </span>
                     </td>
                     <td>
-                      <Badge variant={badgeInfo.variant} size="sm">{badgeInfo.label}</Badge>
+                      <Badge variant={style.badgeVariant} size="sm">
+                        {m.moveType}
+                      </Badge>
                     </td>
                     <td>
                       <div style={{ fontWeight: 500 }}>{m.product?.name || 'Product'}</div>
                       <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)' }}>{m.product?.sku}</div>
                     </td>
+                    <td style={{ fontSize: 13 }}>{m.contact || '-'}</td>
                     <td style={{ color: 'var(--text-muted)', fontSize: 13 }}>{m.fromLocation?.name || '—'}</td>
                     <td style={{ color: 'var(--text-muted)', fontSize: 13 }}>{m.toLocation?.name || '—'}</td>
-                    <td style={{ fontWeight: 600 }}>
-                      {m.quantity > 0 ? `+${m.quantity}` : m.quantity} {m.product?.uom || 'pcs'}
+                    <td>
+                      <span style={{ fontWeight: 700, color: style.color }}>
+                        {m.quantity > 0 ? `+${m.quantity}` : m.quantity} {m.product?.uom || 'pcs'}
+                      </span>
                     </td>
-                    <td style={{ fontSize: 13 }}>{m.responsible?.loginId || 'System'}</td>
+                    <td>
+                      <Badge variant="success" size="sm">Done</Badge>
+                    </td>
                     <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{formatDate(m.date || m.createdAt)}</td>
                   </tr>
                 )
