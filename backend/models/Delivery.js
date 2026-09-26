@@ -11,6 +11,8 @@ const deliverySchema = new mongoose.Schema(
     sequenceNum: { type: Number, required: true },
 
     deliveryTo: { type: String, trim: true, default: '' },
+    deliveryAddress: { type: String, trim: true, default: '' },
+    operationType: { type: String, trim: true, default: 'Delivery Orders' },
     scheduleDate: { type: Date, default: Date.now },
     responsible: {
       type: mongoose.Schema.Types.ObjectId,

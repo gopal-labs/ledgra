@@ -17,6 +17,10 @@ import ReceiptsPage from './pages/ReceiptsPage'
 import ReceiptDetailPage from './pages/ReceiptDetailPage'
 import DeliveriesPage from './pages/DeliveriesPage'
 import DeliveryDetailPage from './pages/DeliveryDetailPage'
+import TransfersPage from './pages/TransfersPage'
+import TransferDetailPage from './pages/TransferDetailPage'
+import AdjustmentsPage from './pages/AdjustmentsPage'
+import MoveHistoryPage from './pages/MoveHistoryPage'
 import PlaceholderPage from './pages/PlaceholderPage'
 
 // Components
@@ -71,14 +75,20 @@ const App = () => {
         <ProtectedRoute><DeliveryDetailPage /></ProtectedRoute>
       } />
       <Route path="/operations/internal" element={
-        <ProtectedRoute><PlaceholderPage title="Internal Transfers" description="Move stock between warehouse locations and zones." /></ProtectedRoute>
+        <ProtectedRoute><TransfersPage /></ProtectedRoute>
+      } />
+      <Route path="/operations/internal/new" element={
+        <ProtectedRoute><TransferDetailPage /></ProtectedRoute>
+      } />
+      <Route path="/operations/internal/:id" element={
+        <ProtectedRoute><TransferDetailPage /></ProtectedRoute>
       } />
       <Route path="/operations/adjustments" element={
-        <ProtectedRoute><PlaceholderPage title="Adjustments" description="Correct stock discrepancies with inventory adjustments." /></ProtectedRoute>
+        <ProtectedRoute><AdjustmentsPage /></ProtectedRoute>
       } />
 
       <Route path="/history" element={
-        <ProtectedRoute><PlaceholderPage title="Move History" description="Full audit trail of all stock movements and transactions." /></ProtectedRoute>
+        <ProtectedRoute><MoveHistoryPage /></ProtectedRoute>
       } />
 
       {/* Settings */}

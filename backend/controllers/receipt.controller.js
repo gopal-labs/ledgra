@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Receipt = require('../models/Receipt');
 const StockLevel = require('../models/StockLevel');
+const StockMove = require('../models/StockMove');
 const Warehouse = require('../models/Warehouse');
 const Location = require('../models/Location');
 
@@ -167,6 +168,22 @@ const validateReceipt = async (req, res) => {
           { upsert: true, new: true, session }
         );
         item.done = item.quantity;
+
+        // Log to StockMove
+        await StockMove.create(
+          [
+            {
+              reference: receipt.reference,
+              moveType: 'Receipt',
+              product: item.product,
+              toLocation: receipt.destinationLocation,
+              quantity: item.quantity,
+              responsible: req.user._id,
+              notes: `Incoming receipt ${receipt.reference}`,
+            },
+          ],
+          { session }
+        );
       }
 
       receipt.status = 'Done';

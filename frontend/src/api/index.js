@@ -68,4 +68,26 @@ export const deliveryApi = {
   cancel: (id) => api.put(`/deliveries/${id}/cancel`),
 }
 
+export const transferApi = {
+  getAll: (params) => api.get('/transfers', { params }),
+  getById: (id) => api.get(`/transfers/${id}`),
+  create: (data) => api.post('/transfers', data),
+  update: (id, data) => api.put(`/transfers/${id}`, data),
+  validate: (id) => api.put(`/transfers/${id}/validate`),
+  cancel: (id) => api.put(`/transfers/${id}/cancel`),
+}
+
+export const adjustmentApi = {
+  getAll: (params) => api.get('/adjustments', { params }),
+  getById: (id) => api.get(`/adjustments/${id}`),
+  getSystemStock: (product, location) => api.get('/adjustments/stock-level', { params: { product, location } }),
+  create: (data) => api.post('/adjustments', data),
+  validate: (id) => api.put(`/adjustments/${id}/validate`),
+}
+
+export const moveApi = {
+  getAll: (params) => api.get('/moves', { params }),
+}
+
+
 

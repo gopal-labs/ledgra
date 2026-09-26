@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Delivery = require('../models/Delivery');
 const StockLevel = require('../models/StockLevel');
+const StockMove = require('../models/StockMove');
 const Warehouse = require('../models/Warehouse');
 const Location = require('../models/Location');
 
@@ -302,6 +303,22 @@ const validateDelivery = async (req, res) => {
       );
 
       item.done = deliveredQty;
+
+      // Log to StockMove
+      await StockMove.create(
+        [
+          {
+            reference: delivery.reference,
+            moveType: 'Delivery',
+            product: item.product,
+            fromLocation: delivery.sourceLocation,
+            quantity: deliveredQty,
+            responsible: req.user._id,
+            notes: `Outgoing delivery ${delivery.reference}`,
+          },
+        ],
+        { session }
+      );
     }
 
     delivery.status = 'Done';
